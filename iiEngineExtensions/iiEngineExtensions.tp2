@@ -1,0 +1,42 @@
+BACKUP ~iiEngineExtensions/backup~
+AUTHOR ~igi~
+VERSION ~0.3.0~
+
+
+//-----------------------------------------------------------------------------
+// Stack Depletion
+//-----------------------------------------------------------------------------
+BEGIN ~Fix: Stack Depletion~
+REQUIRE_PREDICATE GAME_IS ~bgee bg2ee~ ~This component requires BGEE, BG2EE, or EET.~
+REQUIRE_PREDICATE (FILE_EXISTS ~InfinityLoader.exe~ OR FILE_EXISTS ~override/M___EEex.lua~) ~This component requires EEex (InfinityLoader). Install EEex first, then re-run this installer.~
+
+COPY ~iiEngineExtensions/copy/M_IISTKF.lua~ ~override~
+
+
+
+//-----------------------------------------------------------------------------
+// CentreCameraOn
+//-----------------------------------------------------------------------------
+BEGIN ~Action: CentreCameraOn~
+REQUIRE_PREDICATE GAME_IS ~bgee bg2ee~ ~This component requires BGEE, BG2EE, or EET.~
+REQUIRE_PREDICATE (FILE_EXISTS ~InfinityLoader.exe~ OR FILE_EXISTS ~override/M___EEex.lua~) ~This component requires EEex (InfinityLoader). Install EEex first, then re-run this installer.~
+
+COPY ~iiEngineExtensions/copy/M_IICAM.lua~ ~override~
+
+// Register with ACTION.IDS / INSTANT.IDS so script compilers can parse the action
+APPEND ~ACTION.IDS~ ~480 CentreCameraOn(O:Object*)~
+	UNLESS ~CentreCameraOn(O:Object*)~
+
+APPEND ~INSTANT.IDS~ ~480 CentreCameraOn~
+	UNLESS ~480[ %TAB%]+CentreCameraOn~
+
+
+
+//-----------------------------------------------------------------------------
+// Party Path
+//-----------------------------------------------------------------------------
+BEGIN ~Feature: Record party path~
+REQUIRE_PREDICATE GAME_IS ~bgee bg2ee~ ~This component requires BGEE, BG2EE, or EET.~
+REQUIRE_PREDICATE (FILE_EXISTS ~InfinityLoader.exe~ OR FILE_EXISTS ~override/M___EEex.lua~) ~This component requires EEex (InfinityLoader). Install EEex first, then re-run this installer.~
+
+COPY ~iiEngineExtensions/copy/M_IIPATH.lua~ ~override~
