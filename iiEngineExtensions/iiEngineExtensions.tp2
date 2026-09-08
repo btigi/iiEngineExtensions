@@ -1,6 +1,6 @@
 BACKUP ~iiEngineExtensions/backup~
 AUTHOR ~igi~
-VERSION ~0.4.0~
+VERSION ~0.5.0~
 
 
 //-----------------------------------------------------------------------------
@@ -59,3 +59,22 @@ APPEND ~ACTION.IDS~ ~481 SetStoreFlag(S:Store*,I:Flag*Stoflag,I:SetReset*Boolean
 
 APPEND ~INSTANT.IDS~ ~481 SetStoreFlag~
 	UNLESS ~481[ %TAB%]+SetStoreFlag~
+
+
+
+//-----------------------------------------------------------------------------
+// SetStoreRooms
+//-----------------------------------------------------------------------------
+BEGIN ~Action: SetStoreRooms~
+REQUIRE_PREDICATE GAME_IS ~bgee bg2ee~ ~This component requires BGEE, BG2EE, or EET.~
+REQUIRE_PREDICATE (FILE_EXISTS ~InfinityLoader.exe~ OR FILE_EXISTS ~override/M___EEex.lua~) ~This component requires EEex (InfinityLoader). Install EEex first, then re-run this installer.~
+
+COPY ~iiEngineExtensions/copy/M_IISTRM.lua~ ~override~
+COPY ~iiEngineExtensions/copy/storeroom.ids~ ~override~
+
+// Register with ACTION.IDS / INSTANT.IDS so script compilers can parse the action
+APPEND ~ACTION.IDS~ ~482 SetStoreRooms(S:Store*,I:Room*Storeroom,I:SetReset*Boolean)~
+	UNLESS ~SetStoreRooms(S:Store*~
+
+APPEND ~INSTANT.IDS~ ~482 SetStoreRooms~
+	UNLESS ~482[ %TAB%]+SetStoreRooms~

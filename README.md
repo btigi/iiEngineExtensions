@@ -85,6 +85,24 @@ Details: [docs/SetStoreFlag.md](docs/SetStoreFlag.md)
 
 Console: `[iiEESetStoreFlag] SetStoreFlag (action 481) installed.`
 
+### 5 - Action: SetStoreRooms
+
+Adds scripting action:
+
+```
+482 SetStoreRooms(S:Store*,I:Room*Storeroom,I:SetReset*Boolean)
+```
+
+Sets or clears a bit in a store's room flags dword (`STO` offset `0x005c`, e.g. disable royal rooms with bit 3 / `ROYAL`), and marshals the STO so the change persists in save games.
+
+```
+SetStoreRooms("INN2616",ROYAL,FALSE)
+```
+
+Details: [docs/SetStoreRooms.md](docs/SetStoreRooms.md)
+
+Console: `[iiEESetStoreRooms] SetStoreRooms (action 482) installed.`
+
 
 ## Credit
 
