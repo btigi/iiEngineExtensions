@@ -65,6 +65,26 @@ Details: [docs/AreaVisitPath.md](docs/AreaVisitPath.md)
 
 Console: `[iiEEexPath] Area visit path tracker installed (II_PATH_* globals).`
 
+### 4 - Action: SetStoreFlag
+
+Adds scripting action:
+
+```
+481 SetStoreFlag(S:Store*,I:Flag*Stoflag,I:SetReset*Boolean)
+```
+
+Sets or clears a bit in a store's header flags (e.g. disable drink sales with bit 6 / `DRINKS`), and marshals the STO so flag-only changes persist in save games.
+
+```
+SetStoreFlag("INN2616",DRINKS,FALSE)
+```
+
+This component also allows the INN store type to display the identify button.
+
+Details: [docs/SetStoreFlag.md](docs/SetStoreFlag.md)
+
+Console: `[iiEESetStoreFlag] SetStoreFlag (action 481) installed.`
+
 
 ## Credit
 
