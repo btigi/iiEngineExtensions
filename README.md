@@ -103,6 +103,28 @@ Details: [docs/SetStoreRooms.md](docs/SetStoreRooms.md)
 
 Console: `[iiEESetStoreRooms] SetStoreRooms (action 482) installed.`
 
+### 6 - Action: StoreDrinks
+
+Adds scripting actions:
+
+```
+483 AddStoreDrink(S:Store*,I:NameStrRef*,S:Rumour*,I:Alcohol*,I:Price*)
+484 RemoveStoreDrink(S:Store*,I:NameStrRef*)
+```
+
+Adds or removes a drink entry in a store (rumour DLG, name strref, alcohol strength, price). Duplicate name strrefs are not added. Changes are marshaled so they persist in save games.
+
+```
+AddStoreDrink("INN2616",4098,"RUUMDR01",10,2)
+RemoveStoreDrink("INN2616",4098)
+```
+
+Interacting with an unloaded store may cause a crash.
+
+Details: [docs/StoreDrinks.md](docs/StoreDrinks.md)
+
+Console: `[iiEEStoreDrinks] AddStoreDrink (483) / RemoveStoreDrink (484) installed.`
+
 
 ## Credit
 

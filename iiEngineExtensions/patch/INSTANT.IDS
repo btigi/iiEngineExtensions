@@ -1,3 +1,5 @@
 480 CentreCameraOn
 481 SetStoreFlag
 482 SetStoreRooms
+483 AddStoreDrink
+484 RemoveStoreDrink

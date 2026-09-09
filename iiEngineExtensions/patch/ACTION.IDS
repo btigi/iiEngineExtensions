@@ -1,3 +1,5 @@
 480 CentreCameraOn(O:Object*)
 481 SetStoreFlag(S:Store*,I:Flag*Stoflag,I:SetReset*Boolean)
 482 SetStoreRooms(S:Store*,I:Room*Storeroom,I:SetReset*Boolean)
+483 AddStoreDrink(S:Store*,I:NameStrRef*,S:Rumour*,I:Alcohol*,I:Price*)
+484 RemoveStoreDrink(S:Store*,I:NameStrRef*)
