@@ -3,3 +3,4 @@
 482 SetStoreRooms
 483 AddStoreDrink
 484 RemoveStoreDrink
+485 SetStoreLore

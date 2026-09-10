@@ -125,6 +125,24 @@ Details: [docs/StoreDrinks.md](docs/StoreDrinks.md)
 
 Console: `[iiEEStoreDrinks] AddStoreDrink (483) / RemoveStoreDrink (484) installed.`
 
+### 7 - Action: StoreLore
+
+Adds scripting action:
+
+```
+485 SetStoreLore(S:Store*,I:Lore*)
+```
+
+Sets a store's lore value and marshals the STO so the change persists in save games.
+
+```
+SetStoreLore("INN2616",100)
+```
+
+Details: [docs/SetStoreLore.md](docs/SetStoreLore.md)
+
+Console: `[iiEESetStoreLore] SetStoreLore (action 485) installed.`
+
 
 ## Credit
 

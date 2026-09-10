@@ -1,6 +1,6 @@
 BACKUP ~iiEngineExtensions/backup~
 AUTHOR ~igi~
-VERSION ~0.6.0~
+VERSION ~0.7.0~
 
 
 //-----------------------------------------------------------------------------
@@ -102,3 +102,21 @@ APPEND ~INSTANT.IDS~ ~483 AddStoreDrink~
 
 APPEND ~INSTANT.IDS~ ~484 RemoveStoreDrink~
 	UNLESS ~484[ %TAB%]+RemoveStoreDrink~
+
+
+
+//-----------------------------------------------------------------------------
+// StoreLore
+//-----------------------------------------------------------------------------
+BEGIN ~Action: StoreLore~
+REQUIRE_PREDICATE GAME_IS ~bgee bg2ee~ ~This component requires BGEE, BG2EE, or EET.~
+REQUIRE_PREDICATE (FILE_EXISTS ~InfinityLoader.exe~ OR FILE_EXISTS ~override/M___EEex.lua~) ~This component requires EEex (InfinityLoader). Install EEex first, then re-run this installer.~
+
+COPY ~iiEngineExtensions/copy/M_IISTLR.lua~ ~override~
+
+// Register with ACTION.IDS / INSTANT.IDS so script compilers can parse the action
+APPEND ~ACTION.IDS~ ~485 SetStoreLore(S:Store*,I:Lore*)~
+	UNLESS ~SetStoreLore(S:Store*~
+
+APPEND ~INSTANT.IDS~ ~485 SetStoreLore~
+	UNLESS ~485[ %TAB%]+SetStoreLore~
