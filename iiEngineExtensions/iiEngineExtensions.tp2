@@ -1,6 +1,6 @@
 BACKUP ~iiEngineExtensions/backup~
 AUTHOR ~igi~
-VERSION ~0.8.0~
+VERSION ~0.9.0~
 
 
 //-----------------------------------------------------------------------------
@@ -139,3 +139,18 @@ APPEND ~ACTION.IDS~ ~486 SetRoomPrice(S:Store*,I:Room*Storeroom,I:Price*)~
 
 APPEND ~INSTANT.IDS~ ~486 SetRoomPrice~
 	UNLESS ~486[ %TAB%]+SetRoomPrice~
+
+
+
+//-----------------------------------------------------------------------------
+// StolenItemTrigger
+//-----------------------------------------------------------------------------
+BEGIN ~Trigger: StolenItemTrigger~
+REQUIRE_PREDICATE GAME_IS ~bgee bg2ee~ ~This component requires BGEE, BG2EE, or EET.~
+REQUIRE_PREDICATE (FILE_EXISTS ~InfinityLoader.exe~ OR FILE_EXISTS ~override/M___EEex.lua~) ~This component requires EEex (InfinityLoader). Install EEex first, then re-run this installer.~
+
+COPY ~iiEngineExtensions/copy/M_IIHSIT.lua~ ~override~
+
+// Register so script compilers can parse the trigger
+APPEND ~TRIGGER.IDS~ ~0x4111 HasStolenItem(O:Object*)~
+	UNLESS ~HasStolenItem(O:Object*~

@@ -162,6 +162,29 @@ Details: [docs/SetRoomPrice.md](docs/SetRoomPrice.md)
 
 Console: `[iiEESetRoomPrice] SetRoomPrice (action 486) installed.`
 
+### 9 - Trigger: StolenItemTrigger
+
+Adds scripting trigger:
+
+```
+0x4111 HasStolenItem(O:Object*)
+```
+
+Returns true if the object is carrying any inventory item marked Stolen.
+
+```
+IF
+  HasStolenItem(Player1)
+THEN
+  RESPONSE #100
+    DisplayStringHead(Player1,1)
+END
+```
+
+Details: [docs/HasStolenItem.md](docs/HasStolenItem.md)
+
+Console: `[iiEEHasStolenItem] HasStolenItem (trigger 0x4111) installed.`
+
 
 ## Credit
 
