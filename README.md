@@ -143,6 +143,25 @@ Details: [docs/SetStoreLore.md](docs/SetStoreLore.md)
 
 Console: `[iiEESetStoreLore] SetStoreLore (action 485) installed.`
 
+### 8 - Action: RoomPrice
+
+Adds scripting action:
+
+```
+486 SetRoomPrice(S:Store*,I:Room*Storeroom,I:Price*)
+```
+
+Sets a store room rental price (`PEASANT` / `MERCHANT` / `NOBLE` / `ROYAL` via `STOREROOM.IDS`) and marshals the STO so the change persists in save games.
+
+```
+SetRoomPrice("BERNARD",PEASANT,1)
+SetRoomPrice("BERNARD",ROYAL,50)
+```
+
+Details: [docs/SetRoomPrice.md](docs/SetRoomPrice.md)
+
+Console: `[iiEESetRoomPrice] SetRoomPrice (action 486) installed.`
+
 
 ## Credit
 

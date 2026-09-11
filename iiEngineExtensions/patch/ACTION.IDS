@@ -4,3 +4,4 @@
 483 AddStoreDrink(S:Store*,I:NameStrRef*,S:Rumour*,I:Alcohol*,I:Price*)
 484 RemoveStoreDrink(S:Store*,I:NameStrRef*)
 485 SetStoreLore(S:Store*,I:Lore*)
+486 SetRoomPrice(S:Store*,I:Room*Storeroom,I:Price*)

@@ -1,6 +1,6 @@
 BACKUP ~iiEngineExtensions/backup~
 AUTHOR ~igi~
-VERSION ~0.7.0~
+VERSION ~0.8.0~
 
 
 //-----------------------------------------------------------------------------
@@ -120,3 +120,22 @@ APPEND ~ACTION.IDS~ ~485 SetStoreLore(S:Store*,I:Lore*)~
 
 APPEND ~INSTANT.IDS~ ~485 SetStoreLore~
 	UNLESS ~485[ %TAB%]+SetStoreLore~
+
+
+
+//-----------------------------------------------------------------------------
+// RoomPrice
+//-----------------------------------------------------------------------------
+BEGIN ~Action: RoomPrice~
+REQUIRE_PREDICATE GAME_IS ~bgee bg2ee~ ~This component requires BGEE, BG2EE, or EET.~
+REQUIRE_PREDICATE (FILE_EXISTS ~InfinityLoader.exe~ OR FILE_EXISTS ~override/M___EEex.lua~) ~This component requires EEex (InfinityLoader). Install EEex first, then re-run this installer.~
+
+COPY ~iiEngineExtensions/copy/M_IISTRP.lua~ ~override~
+COPY ~iiEngineExtensions/copy/storeroom.ids~ ~override~
+
+// Register with ACTION.IDS / INSTANT.IDS so script compilers can parse the action
+APPEND ~ACTION.IDS~ ~486 SetRoomPrice(S:Store*,I:Room*Storeroom,I:Price*)~
+	UNLESS ~SetRoomPrice(S:Store*~
+
+APPEND ~INSTANT.IDS~ ~486 SetRoomPrice~
+	UNLESS ~486[ %TAB%]+SetRoomPrice~
