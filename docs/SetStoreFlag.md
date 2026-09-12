@@ -1,4 +1,4 @@
-# SetStoreFlag - ACTION.IDS 481
+# SetStoreFlag — ACTION.IDS 481
 
 ## Synopsis
 
@@ -38,6 +38,19 @@ Bits 7, 8, and 11 are unused/unknown in IESDP; 16–31 are accepted as raw integ
 
 ## Example
 
+Enable cures on an inn (Copper Coronet), then add a cure with `AddStoreCure`:
+
+```
+IF
+  Global("iiCoronetCures","GLOBAL",1)
+THEN
+  RESPONSE #100
+    SetGlobal("iiCoronetCures","GLOBAL",2)
+    SetStoreFlag("BERNARD",CURES,TRUE)
+    AddStoreCure("BERNARD","SPWI119",50)
+END
+```
+
 Disable drink sales at an inn after an event:
 
 ```
@@ -50,12 +63,6 @@ THEN
 END
 ```
 
-Equivalent with a raw bit index:
-
-```
-SetStoreFlag("INN2616",6,FALSE)
-```
-
 ## Requirements
 
 - EEex + InfinityLoader
@@ -66,11 +73,29 @@ SetStoreFlag("INN2616",6,FALSE)
 
 - Loads the store via `CStore`, toggles `m_header.m_nStoreFlags`, calls `CStore::Marshal` (persists into temp for SAV packing), then `CStore::InvalidateStore`.
 - Also updates any already-loaded live copies (`CInfGame.m_aServerStore` / open `CScreenStore` store or bag) so the UI reflects the change without a restart.
-- When the store screen is open, rebuilds the bottom-button panel IDs from the new flags (so Identify can appear without closing the store) and refreshes the identify item list when bit 2 changes.
+- When the store screen is open, rebuilds the bottom-button panel IDs from the new flags and refreshes the identify item list when bit 2 changes.
 - Missing / unloadable store resref: action errors.
+- Adding cure entries, room availability, drink lists, etc. is handled by other actions (`AddStoreCure`, `SetStoreRooms`, …). This action only toggles flag bits and UI buttons.
 
-### Inn UI (Copper Coronet, etc.)
+### Flag-driven store buttons
 
-Vanilla `CScreenStore::StartStore` for store type **Inn** only wires Rooms / Buy-Sell / Drinks buttons — it never checks the identify flag, so Identify would never appear even when bit 2 is set in the STO.
+Vanilla `CScreenStore::StartStore` wires bottom buttons by **store type** (inns never get Identify or Cures, temples always get Cures, and so on). That blocks scripted flag changes from surfacing on the “wrong” type.
 
-This component hooks the end of `StartStore`’s button setup and rebuilds the bottom-button IDs so Inns also get Identify (panel 4) when bit 2 is set: Rooms, Buy-Sell, Identify, Drinks.
+This component hooks the end of `StartStore`’s button setup (pure ASM — no Lua call inside `StartStore`) and rebuilds the four bottom-button panel IDs from the STO flags on **any** store type:
+
+| Service | Panel | Shown when |
+|---------|-------|------------|
+| Rooms | 7 | Store type is Inn (room enablement is `SetStoreRooms` / STO room data) |
+| Buy / Sell | 2 | `BUY` or `SELL` |
+| Identify | 4 | `IDENTIFY` |
+| Donate | 9 | `DONATE` |
+| Cures | 5 | `CURES` |
+| Drinks | 8 | `DRINKS` |
+
+`STEAL` and other flags that are not bottom-bar services are still toggled in the STO header but do not add a strip button.
+
+The engine only has **four** bottom-button slots. Candidates are offered in the order above. If more than four would appear:
+
+1. **Drinks** is dropped first  
+2. **Cures** is dropped next if still over the cap  
+3. Any further overflow is dropped from the end of the remaining list  

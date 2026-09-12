@@ -77,9 +77,11 @@ Sets or clears a bit in a store's header flags (e.g. disable drink sales with bi
 
 ```
 SetStoreFlag("INN2616",DRINKS,FALSE)
+SetStoreFlag("BERNARD",CURES,TRUE)
+SetStoreFlag("TEM4802",DONATE,TRUE)
 ```
 
-This component also allows the INN store type to display the identify button.
+Also rebuilds the store screen’s bottom buttons from those flags on **any** store type (Buy/Sell, Identify, Donate, Cures, Drinks; Rooms on inns). The engine allows four buttons; if more services are enabled, **Drinks** is omitted first, then **Cures**.
 
 Details: [docs/SetStoreFlag.md](docs/SetStoreFlag.md)
 

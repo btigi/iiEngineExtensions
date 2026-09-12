@@ -214,8 +214,26 @@
 		return true
 	end
 
-	-- Mirror CScreenStore::StartStore button-panel wiring so flag changes while the
-	-- store UI is open can show/hide Identify (and similar) without reopening.
+	-- Bottom-bar panel IDs (engine hard-caps at 4 slots).
+	-- Offer order = keep priority; overflow drops Drinks first, then Cures.
+	-- Rooms stay type-gated (inn); other services follow STOFLAG bits on any type.
+	local PANEL_BUYSELL  = 2
+	local PANEL_IDENTIFY = 4
+	local PANEL_CURES    = 5
+	local PANEL_ROOMS    = 7
+	local PANEL_DRINKS   = 8
+	local PANEL_DONATE   = 9 -- BG2EE: separate donate button (temple strip)
+
+	local function removePanel(candidates, panelId)
+		for i = #candidates, 1, -1 do
+			if candidates[i] == panelId then
+				table.remove(candidates, i)
+				return true
+			end
+		end
+		return false
+	end
+
 	local function rebuildOpenStoreButtons(screen, store)
 		if screen == nil or store == nil or store.m_header == nil then
 			return
@@ -226,38 +244,35 @@
 			return
 		end
 
-		local ids = { -1, -1, -1, -1 }
-		local n = 0
-		local function addButton(panelId)
-			if n < 4 then
-				n = n + 1
-				ids[n] = panelId
-			end
+		local candidates = {}
+		local function offer(panelId)
+			candidates[#candidates + 1] = panelId
 		end
 
-		if storeType == 0 or storeType == 4 then
-			addButton(2)
-			if EEex_BAnd(flags, 0x4) ~= 0 then addButton(4) end
-			if EEex_BAnd(flags, 0x20) ~= 0 then addButton(5) end
-		elseif storeType == 1 then
-			addButton(8)
-			if EEex_BAnd(flags, 0x3) ~= 0 then addButton(2) end
-			if EEex_BAnd(flags, 0x4) ~= 0 then addButton(4) end
-		elseif storeType == 2 then
-			-- Inn: vanilla StartStore never wires Identify (only Rooms / Buy-Sell / Drinks).
-			-- Add Identify when bit 2 is set so SetStoreFlag can surface it on places like Copper Coronet.
-			addButton(7)
-			if EEex_BAnd(flags, 0x3) ~= 0 then addButton(2) end
-			if EEex_BAnd(flags, 0x4) ~= 0 then addButton(4) end
-			if EEex_BAnd(flags, 0x40) ~= 0 then addButton(8) end
-		elseif storeType == 3 then
-			addButton(5)
-			if EEex_BAnd(flags, 0x3) ~= 0 then addButton(2) end
-			if EEex_BAnd(flags, 0x4) ~= 0 then addButton(4) end
-		elseif storeType == 5 then
-			-- container / bag: no bottom service buttons
-		else
-			return
+		-- Rooms: inn store type (enablement is SetStoreRooms / STO room data).
+		if storeType == 2 then
+			offer(PANEL_ROOMS)
+		end
+		if EEex_BAnd(flags, 0x3) ~= 0 then offer(PANEL_BUYSELL) end   -- BUY|SELL
+		if EEex_BAnd(flags, 0x4) ~= 0 then offer(PANEL_IDENTIFY) end  -- IDENTIFY
+		if EEex_BAnd(flags, 0x10) ~= 0 then offer(PANEL_DONATE) end   -- DONATE
+		if EEex_BAnd(flags, 0x20) ~= 0 then offer(PANEL_CURES) end    -- CURES
+		if EEex_BAnd(flags, 0x40) ~= 0 then offer(PANEL_DRINKS) end   -- DRINKS
+
+		-- Engine only has 4 bottom buttons: drop Drinks, then Cures, then tail.
+		if #candidates > 4 then
+			removePanel(candidates, PANEL_DRINKS)
+		end
+		if #candidates > 4 then
+			removePanel(candidates, PANEL_CURES)
+		end
+		while #candidates > 4 do
+			table.remove(candidates)
+		end
+
+		local ids = { -1, -1, -1, -1 }
+		for i = 1, #candidates do
+			ids[i] = candidates[i]
 		end
 
 		local buttons = screen.m_adwButtonPanelId
@@ -298,43 +313,127 @@
 		end)
 	end
 
-	-- Vanilla StartStore inn (type 2) wires Rooms / Buy-Sell / Drinks but never Identify.
-	-- Do NOT HookBeforeRestore the drinks `jz` — relocating that relative branch crashes when
-	-- drinks is clear (jz taken). Detour the whole drinks check with absolute continuations.
+	-- After StartStore finishes vanilla type-specific button wiring it hits
+	-- `mov dword [this+0x8FC], 1`. Rebuild from STO flags there so any store type can
+	-- show Identify / Donate / Cures / Drinks / Buy-Sell when the matching bits are set.
+	-- Pure ASM only — GenLuaCall mid-StartStore silently access-violates on this build.
+	-- Fill order matches Lua: Rooms, BuySell, Identify, Donate, Cures, Drinks (cap 4).
 	local OFF_START_STORE = 0xE9B30
-	local OFF_INN_DRINKS = 0x454 -- test bl, 40h ; jz after-buttons
 	local OFF_AFTER_BUTTONS = 0x4FB -- mov dword [rsi+0x8FC], 1
-	local startStore = getAbility + OFF_START_STORE
-	local innDrinks = startStore + OFF_INN_DRINKS
-	local afterButtons = startStore + OFF_AFTER_BUTTONS
-	local innDrinksPattern = { 0xF6, 0xC3, 0x40, 0x0F, 0x84, 0x9E, 0x00, 0x00, 0x00 }
-	if matchesBytes(innDrinks, innDrinksPattern) then
+	local afterButtons = getAbility + OFF_START_STORE + OFF_AFTER_BUTTONS
+	local afterButtonsPattern = { 0xC7, 0x86, 0xFC, 0x08, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00 }
+	-- CScreenStore / CStore field offsets (BG2EE 2.6.6.0 x64), verified against StartStore.
+	local OFF_BUTTONS = 0x78C -- m_adwButtonPanelId[4]
+	local OFF_PSTORE  = 0x7A0 -- m_pStore
+	local OFF_STYPE   = 0x08  -- CStore: store type
+	local OFF_SFLAGS  = 0x10  -- CStore: store flags
+	if matchesBytes(afterButtons, afterButtonsPattern) then
 		EEex_DisableCodeProtection()
-		local cave = EEex_JITNear({[[
-			; bl = store flags, ecx = next button index, rsi = CScreenStore*
-			test bl, 4
-			jz ii_sto_inn_skip_identify
-			mov dword ptr ds:[rsi+rcx*4+0x78C], 4
-			inc ecx
-			ii_sto_inn_skip_identify:
-			test bl, 40h
-			jz ii_sto_inn_done
-			mov dword ptr ds:[rsi+rcx*4+0x78C], 8
-			ii_sto_inn_done:
-			jmp ]], afterButtons, [[ #ENDL
-		]]})
-		-- Replace test+jz (9 bytes) with jmp to cave; orphaned mov-drinks/jmp become dead.
-		EEex_JITAt(innDrinks, {[[
-			jmp ]], cave, [[ #ENDL
-			nop
-			nop
-			nop
-			nop
-		]]})
+		EEex_HookBeforeRestoreWithLabels(afterButtons, 0, 10, 10, {
+			{"stack_mod", 8},
+			{"hook_integrity_watchdog_ignore_registers", {
+				EEex_HookIntegrityWatchdogRegister.RAX,
+				EEex_HookIntegrityWatchdogRegister.RCX,
+				EEex_HookIntegrityWatchdogRegister.RDX,
+				EEex_HookIntegrityWatchdogRegister.R8,
+				EEex_HookIntegrityWatchdogRegister.R9,
+				EEex_HookIntegrityWatchdogRegister.R10,
+				EEex_HookIntegrityWatchdogRegister.R11,
+			}},
+		}, EEex_FlattenTable({
+			{[[
+			#MAKE_SHADOW_SPACE(40)
+			mov qword ptr ss:[rsp+#SHADOW_SPACE_BOTTOM(-8)], rax
+			mov qword ptr ss:[rsp+#SHADOW_SPACE_BOTTOM(-16)], rbx
+			mov qword ptr ss:[rsp+#SHADOW_SPACE_BOTTOM(-24)], rcx
+			mov qword ptr ss:[rsp+#SHADOW_SPACE_BOTTOM(-32)], rdx
+
+			; rsi = CScreenStore*
+			mov rax, qword ptr ds:[rsi+#$(1)] ]], {OFF_PSTORE}, [[ #ENDL
+			test rax, rax
+			jz ii_sto_btns_done
+
+			; clear four button slots
+			mov dword ptr ds:[rsi+#$(1)], -1 ]], {OFF_BUTTONS}, [[ #ENDL
+			mov dword ptr ds:[rsi+#$(1)], -1 ]], {OFF_BUTTONS + 4}, [[ #ENDL
+			mov dword ptr ds:[rsi+#$(1)], -1 ]], {OFF_BUTTONS + 8}, [[ #ENDL
+			mov dword ptr ds:[rsi+#$(1)], -1 ]], {OFF_BUTTONS + 12}, [[ #ENDL
+
+			mov ebx, dword ptr ds:[rax+#$(1)] ]], {OFF_SFLAGS}, [[ #ENDL ; flags
+			mov ecx, dword ptr ds:[rax+#$(1)] ]], {OFF_STYPE}, [[ #ENDL  ; type
+			xor edx, edx ; next button index
+
+			; Rooms (inn type 2)
+			cmp ecx, 2
+			jne ii_sto_btns_buysell
+			mov dword ptr ds:[rsi+rdx*4+#$(1)], 7 ]], {OFF_BUTTONS}, [[ #ENDL
+			inc edx
+
+			ii_sto_btns_buysell:
+			test ebx, 3
+			jz ii_sto_btns_identify
+			cmp edx, 4
+			jge ii_sto_btns_done
+			mov dword ptr ds:[rsi+rdx*4+#$(1)], 2 ]], {OFF_BUTTONS}, [[ #ENDL
+			inc edx
+
+			ii_sto_btns_identify:
+			test ebx, 4
+			jz ii_sto_btns_donate
+			cmp edx, 4
+			jge ii_sto_btns_done
+			mov dword ptr ds:[rsi+rdx*4+#$(1)], 4 ]], {OFF_BUTTONS}, [[ #ENDL
+			inc edx
+
+			ii_sto_btns_donate:
+			; DONATE bit 4 (0x10) -> panel 9
+			test ebx, 10h
+			jz ii_sto_btns_cures
+			cmp edx, 4
+			jge ii_sto_btns_done
+			mov dword ptr ds:[rsi+rdx*4+#$(1)], 9 ]], {OFF_BUTTONS}, [[ #ENDL
+			inc edx
+
+			ii_sto_btns_cures:
+			; after donate; skipped when edx >= 4 (drops cures before drinks)
+			test ebx, 20h
+			jz ii_sto_btns_drinks
+			cmp edx, 4
+			jge ii_sto_btns_done
+			mov dword ptr ds:[rsi+rdx*4+#$(1)], 5 ]], {OFF_BUTTONS}, [[ #ENDL
+			inc edx
+
+			ii_sto_btns_drinks:
+			; lowest priority — skipped first when edx >= 4
+			test ebx, 40h
+			jz ii_sto_btns_done
+			cmp edx, 4
+			jge ii_sto_btns_done
+			mov dword ptr ds:[rsi+rdx*4+#$(1)], 8 ]], {OFF_BUTTONS}, [[ #ENDL
+
+			ii_sto_btns_done:
+			mov rdx, qword ptr ss:[rsp+#SHADOW_SPACE_BOTTOM(-32)]
+			mov rcx, qword ptr ss:[rsp+#SHADOW_SPACE_BOTTOM(-24)]
+			mov rbx, qword ptr ss:[rsp+#SHADOW_SPACE_BOTTOM(-16)]
+			mov rax, qword ptr ss:[rsp+#SHADOW_SPACE_BOTTOM(-8)]
+			#DESTROY_SHADOW_SPACE
+			]]},
+		}))
 		EEex_EnableCodeProtection()
 	else
-		print("[iiEESetStoreFlag] Warning: StartStore inn-drinks pattern mismatch at "
-			.. EEex_ToHex(innDrinks) .. "; inn Identify button patch skipped.")
+		print("[iiEESetStoreFlag] Warning: StartStore after-buttons pattern mismatch at "
+			.. EEex_ToHex(afterButtons) .. "; flag-driven store buttons skipped.")
+	end
+
+	-- Kept for live SetStoreFlag while the store UI is already open (Lua-safe path).
+	function II_Sto_FixStoreButtons(screen)
+		if screen == nil then
+			return
+		end
+		local store = screen.m_pStore
+		if store ~= nil then
+			rebuildOpenStoreButtons(screen, store)
+		end
 	end
 
 	local function updateLiveStoreCopies(storeName, bitIndex, setBit)
@@ -377,6 +476,10 @@
 				rebuildOpenStoreButtons(screen, openStore)
 				if bitIndex == 2 then
 					refreshOpenStoreIdentify(screen)
+				else
+					pcall(function()
+						screen:UpdateMainPanel()
+					end)
 				end
 			end
 			local openBag = screen.m_pBag
