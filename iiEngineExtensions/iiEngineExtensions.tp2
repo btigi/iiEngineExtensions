@@ -178,3 +178,18 @@ APPEND ~INSTANT.IDS~ ~487 AddStoreCure~
 
 APPEND ~INSTANT.IDS~ ~488 RemoveStoreCure~
 	UNLESS ~488[ %TAB%]+RemoveStoreCure~
+
+
+
+//-----------------------------------------------------------------------------
+// StoreHasItem
+//-----------------------------------------------------------------------------
+BEGIN ~Trigger: StoreHasItem~
+REQUIRE_PREDICATE GAME_IS ~bgee bg2ee~ ~This component requires BGEE, BG2EE, or EET.~
+REQUIRE_PREDICATE (FILE_EXISTS ~InfinityLoader.exe~ OR FILE_EXISTS ~override/M___EEex.lua~) ~This component requires EEex (InfinityLoader). Install EEex first, then re-run this installer.~
+
+COPY ~iiEngineExtensions/copy/M_IISTHI.lua~ ~override~
+
+// Register so script compilers can parse the trigger
+APPEND ~TRIGGER.IDS~ ~0x4112 StoreHasItem(S:Store*,S:Item*)~
+	UNLESS ~StoreHasItem(S:Store*~

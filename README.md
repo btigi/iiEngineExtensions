@@ -207,6 +207,29 @@ Details: [docs/StoreCures.md](docs/StoreCures.md)
 
 Console: `[iiEEStoreCures] AddStoreCure (487) / RemoveStoreCure (488) installed.`
 
+### 11 - Trigger: StoreHasItem
+
+Adds scripting trigger:
+
+```
+0x4112 StoreHasItem(S:Store*,S:Item*)
+```
+
+Returns true if the specified store contains the specified item for sale.
+
+```
+IF
+  StoreHasItem("RIBALD","SW2H01")
+THEN
+  RESPONSE #100
+    DisplayStringHead(Player1,1)
+END
+```
+
+Details: [docs/StoreHasItem.md](docs/StoreHasItem.md)
+
+Console: `[iiEEStoreHasItem] StoreHasItem (trigger 0x4112) installed.`
+
 
 ## Credit
 
