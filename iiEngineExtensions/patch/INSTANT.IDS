@@ -5,3 +5,5 @@
 484 RemoveStoreDrink
 485 SetStoreLore
 486 SetRoomPrice
+487 AddStoreCure
+488 RemoveStoreCure

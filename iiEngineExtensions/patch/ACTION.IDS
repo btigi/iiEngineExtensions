@@ -5,3 +5,5 @@
 484 RemoveStoreDrink(S:Store*,I:NameStrRef*)
 485 SetStoreLore(S:Store*,I:Lore*)
 486 SetRoomPrice(S:Store*,I:Room*Storeroom,I:Price*)
+487 AddStoreCure(S:Store*,S:Spell*,I:Price*)
+488 RemoveStoreCure(S:Store*,S:Spell*)

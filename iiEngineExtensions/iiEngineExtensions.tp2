@@ -1,6 +1,6 @@
 BACKUP ~iiEngineExtensions/backup~
 AUTHOR ~igi~
-VERSION ~0.9.0~
+VERSION ~0.10.0~
 
 
 //-----------------------------------------------------------------------------
@@ -154,3 +154,27 @@ COPY ~iiEngineExtensions/copy/M_IIHSIT.lua~ ~override~
 // Register so script compilers can parse the trigger
 APPEND ~TRIGGER.IDS~ ~0x4111 HasStolenItem(O:Object*)~
 	UNLESS ~HasStolenItem(O:Object*~
+
+
+
+//-----------------------------------------------------------------------------
+// StoreCures
+//-----------------------------------------------------------------------------
+BEGIN ~Action: StoreCures~
+REQUIRE_PREDICATE GAME_IS ~bgee bg2ee~ ~This component requires BGEE, BG2EE, or EET.~
+REQUIRE_PREDICATE (FILE_EXISTS ~InfinityLoader.exe~ OR FILE_EXISTS ~override/M___EEex.lua~) ~This component requires EEex (InfinityLoader). Install EEex first, then re-run this installer.~
+
+COPY ~iiEngineExtensions/copy/M_IISTCU.lua~ ~override~
+
+// Register with ACTION.IDS / INSTANT.IDS so script compilers can parse the actions
+APPEND ~ACTION.IDS~ ~487 AddStoreCure(S:Store*,S:Spell*,I:Price*)~
+	UNLESS ~AddStoreCure(S:Store*~
+
+APPEND ~ACTION.IDS~ ~488 RemoveStoreCure(S:Store*,S:Spell*)~
+	UNLESS ~RemoveStoreCure(S:Store*~
+
+APPEND ~INSTANT.IDS~ ~487 AddStoreCure~
+	UNLESS ~487[ %TAB%]+AddStoreCure~
+
+APPEND ~INSTANT.IDS~ ~488 RemoveStoreCure~
+	UNLESS ~488[ %TAB%]+RemoveStoreCure~

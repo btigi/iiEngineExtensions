@@ -185,6 +185,26 @@ Details: [docs/HasStolenItem.md](docs/HasStolenItem.md)
 
 Console: `[iiEEHasStolenItem] HasStolenItem (trigger 0x4111) installed.`
 
+### 10 - Action: StoreCures
+
+Adds scripting actions:
+
+```
+487 AddStoreCure(S:Store*,S:Spell*,I:Price*)
+488 RemoveStoreCure(S:Store*,S:Spell*)
+```
+
+Adds or removes a temple cure (SPL + price) on a store. Duplicate SPL resrefs are not added. Changes are marshaled so they persist in save games.
+
+```
+AddStoreCure("TEMPLE1","SPPR103",50)
+RemoveStoreCure("TEMPLE1","SPPR103")
+```
+
+Details: [docs/StoreCures.md](docs/StoreCures.md)
+
+Console: `[iiEEStoreCures] AddStoreCure (487) / RemoveStoreCure (488) installed.`
+
 
 ## Credit
 
